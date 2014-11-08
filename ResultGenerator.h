@@ -6,7 +6,9 @@
 #include <iostream>
 #include <iomanip>
 #include <cmath>
+#include <BimodalPredictor.h>
 #include <GSharePredictor.h>
+#include <HybridPredictor.h>
 namespace CacheSimulator
 {
   class ResultGenerator
@@ -36,6 +38,23 @@ namespace CacheSimulator
           for(ui32 i=0; i< bp->numRegisters(); i++)
           {
             std::cout<<i<<"\t"<<bp->contents(i)<<std::endl;
+          }
+        }
+        HybridPredictor *hp = dynamic_cast<HybridPredictor*>(p);
+        if(hp)
+        {
+          std::cout<<"FINAL GSHARE CONTENTS"<<std::endl;
+          ui32 size = hp->gshareSize();
+          for(ui32 i=0; i< size; i++)
+          {
+            std::cout<<i<<"\t"<<hp->gshareContents(i)<<std::endl;
+          }
+
+          std::cout<<"FINAL BIMODAL CONTENTS"<<std::endl;
+          size = hp->bimodalSize();
+          for(ui32 i=0; i< size; i++)
+          {
+            std::cout<<i<<"\t"<<hp->bimodalContents(i)<<std::endl;
           }
         }
       }

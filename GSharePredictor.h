@@ -45,6 +45,7 @@ namespace BranchPrediction
     }
     ui32 operator() () {return _counter;}
   };
+  typedef GlobalHistoryCounter GHCount;
 
   class GSharePredictor : public BimodalPredictor
   {
@@ -63,16 +64,9 @@ namespace BranchPrediction
       {
         ui32 index = _indexGen(pc);
         index = _global_history^index;
-        bool predicted = (_local_history[index]() > LOCAL_HISTORY_COUNTER_THRESH);
+        bool predicted = _local_history[index];
         _global_history>>actual;
-        if (actual)
-        {
-          _local_history[index]++;
-        }
-        else
-        {
-          _local_history[index]--;
-        }
+        _local_history[index](actual);
         return predicted;
       }
 
@@ -80,7 +74,6 @@ namespace BranchPrediction
       // global branch histor size
       ui32 _global_size;
 
-      typedef GlobalHistoryCounter GHCount;
 
       // counter for storing global history
       GlobalHistoryCounter _global_history;

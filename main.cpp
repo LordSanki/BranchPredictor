@@ -1,12 +1,14 @@
-#include <iostream>
+#include <cstring>
 #include <cstdlib>
+#include <iostream>
+#include <exception>
 #include <Cache.h>
 #include <MainMemory.h>
 #include <ResultGenerator.h>
 #include <TraceReader.h>
-#include <exception>
+#include <BimodalPredictor.h>
 #include <GSharePredictor.h>
-#include <cstring>
+#include <HybridPredictor.h>
 
 using namespace std;
 using namespace CacheSimulator;
@@ -17,7 +19,7 @@ int main(int argc, char **argv)
   if(    (argc < 6)
       || ((strcmp(argv[1],"bimodal") == 0) && (argc != 6))
       || ((strcmp(argv[1],"gshare") == 0)  && (argc != 7))
-      || ((strcmp(argv[1],"hybrid") == 0)  && (argc != 8))
+      || ((strcmp(argv[1],"hybrid") == 0)  && (argc != 9))
     )
   {
     cout<<"invalid number of arguments"<<endl;
@@ -27,21 +29,30 @@ int main(int argc, char **argv)
     return -1;
   }
 
-  ui16 block_size = 32;//atoi(argv[e_BLOCKSIZE]);
-  ui16 btb_size       = atoi(argv[argc -3]);//argv[e_L1_SIZE]);
-  ui16 btb_assoc      = atoi(argv[argc -2]);//argv[e_L1_ASSOC]);
+  //ui16 block_size = 32;//atoi(argv[e_BLOCKSIZE]);
+  //ui16 btb_size       = atoi(argv[argc -3]);//argv[e_L1_SIZE]);
+  //ui16 btb_assoc      = atoi(argv[argc -2]);//argv[e_L1_ASSOC]);
   ui16 M1=0,M2=0,N=0,K=0;
  
-  if(strcmp(argv[1],"bimodal") == 0) M2 = atoi(argv[2]);
-  if(strcmp(argv[1],"gshare") == 0)  M1 = atoi(argv[2]);
-  if(strcmp(argv[1],"gshare") == 0)  N  = atoi(argv[3]);
-  if(strcmp(argv[1],"hybrid") == 0)  K  = atoi(argv[2]);
-  if(strcmp(argv[1],"hybrid") == 0)  M1 = atoi(argv[3]);
-  if(strcmp(argv[1],"hybrid") == 0)  N  = atoi(argv[4]);
-  if(strcmp(argv[1],"hybrid") == 0)  M2 = atoi(argv[5]);
+  if(strcmp(argv[1],"bimodal") == 0)
+  {
+    M2 = atoi(argv[2]);
+  }
+  if(strcmp(argv[1],"gshare") == 0)
+  {
+    M1 = atoi(argv[2]);
+    N  = atoi(argv[3]);
+  }
+  if(strcmp(argv[1],"hybrid") == 0)
+  {
+    K  = atoi(argv[2]);
+    M1 = atoi(argv[3]);
+    N  = atoi(argv[4]);
+    M2 = atoi(argv[5]);
+  }
 
-  ReplacementPolicy::Types rP  = ReplacementPolicy::e_LRU;
-  WritePolicy wP        = e_WBWA;
+  //ReplacementPolicy::Types rP  = ReplacementPolicy::e_LRU;
+  //WritePolicy wP        = e_WBWA;
 
   try
   {
@@ -49,26 +60,23 @@ int main(int argc, char **argv)
 //    btb->init(); 
 //    btb->name("L1");
 
-    BranchPredictor *p1 = new GSharePredictor(M1,N);
-    BranchPredictor *p2 = new BimodalPredictor(M2);
-//    GSharePredictor *h1 = new HybridPredictor(K,p1,p2);
-
-//    h1->init();
-//    h1->name("CHOOSER");
+    BranchPredictor *gshare = new GSharePredictor(M1,N);
+    BranchPredictor *bimodal = new BimodalPredictor(M2);
+    BranchPredictor *hybrid = new HybridPredictor(K,M1,N,M2);
 
     BranchPredictor *p = NULL;
-    if(strcmp(argv[1],"bimodal") == 0) p = p2;
-    if(strcmp(argv[1],"gshare") == 0)  p = p1;
-//    if(strcmp(argv[1],"hybrid") == 0)  p = h1;
+    if(strcmp(argv[1],"bimodal") == 0) p = bimodal;
+    if(strcmp(argv[1],"gshare") == 0)  p = gshare;
+    if(strcmp(argv[1],"hybrid") == 0)  p = hybrid;
     ResultGenerator rGen(argc, argv);
     for(TraceReader tReader(argv[argc-1]); tReader; tReader++)
     {
       tReader>>p;
     }
     rGen<<p;
-    delete p1;
-    delete p2;
-//    delete h1;
+    delete bimodal;
+    delete gshare;
+    delete hybrid;
 //    delete btb;
 
   }

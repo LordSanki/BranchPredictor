@@ -22,28 +22,36 @@ namespace BranchPrediction
     const ui32 min;
     const ui32 thresh;
   };
+  // struct to mentain local history counters
   struct LocalHistoryCounter
   {
     ui8 _counter;
-    LocalHistoryCounter(const LocalHistoryCustomizer customLH)
+    LocalHistoryCounter(const LocalHistoryCustomizer customLH = LocalHistoryCustomizer())
       :_customLH(customLH)
     {
       _counter = _customLH.def;
     }
     ui8 operator() () const {return _counter;}
-    void operator++(i32) 
+    operator bool() {return _counter > _customLH.thresh;}
+    void operator() (bool increment)
     {
-      if(_counter < _customLH.max)
+      if(increment)
+      {
+        if(_counter < _customLH.max)
         _counter++;
-    }
-    void operator--(i32)
-    {
-      if(_counter > _customLH.min)
+      }
+      else
+      {
+        if(_counter > _customLH.min)
         _counter--;
+      }
     }
     private:
       const LocalHistoryCustomizer _customLH;
   };
+  typedef LocalHistoryCounter LHCount;
+  typedef std::vector<LHCount> LocalHistoryStore;
+
 
   class BimodalPredictor : public BranchPredictor
   {
@@ -65,15 +73,8 @@ namespace BranchPrediction
       virtual bool predictCustom(ui32 pc, bool actual)
       {
         ui32 index = _indexGen(pc);
-        bool predicted = (_local_history[index]() > _customLH.thresh);
-        if (actual)
-        {
-          _local_history[index]++;
-        }
-        else
-        {
-          _local_history[index]--;
-        }
+        bool predicted = _local_history[index];
+        _local_history[index](actual);
         return predicted;
       }
 
@@ -89,12 +90,8 @@ namespace BranchPrediction
       ui32 _num_registers;
       
       const LocalHistoryCustomizer _customLH;
-      // struct to mentain local history counters
-      typedef LocalHistoryCounter LHCount;
-      typedef std::vector<LHCount> LocalHistoryStore;
       // register file for local history counters
       LocalHistoryStore _local_history;
-
       // object to help extract index from PC
       const AddressDecoder _indexGen;
 
