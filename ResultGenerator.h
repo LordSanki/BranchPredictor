@@ -17,7 +17,7 @@ namespace CacheSimulator
         _argc = argc;
         _argv = argv;
       }
-      void operator<<(BranchPrediction::GSharePredictor *p)
+      void operator<<(BranchPrediction::BranchPredictor *p)
       {
         using namespace BranchPrediction;
         std::cout<<"COMMAND"<<std::endl;
@@ -30,9 +30,13 @@ namespace CacheSimulator
         double rate = ((p->mispredictions()*100.0)/p->numBranches());
         std::cout<<"misprediction rate: "<<std::fixed<<std::setprecision(2)<<rate<<"%"<<std::endl;
         std::cout<<"FINAL "<<p->name()<<" CONTENTS"<<std::endl;
-        for(ui32 i=0; i< p->numRegisters(); i++)
+        BimodalPredictor *bp = dynamic_cast<BimodalPredictor*>(p);
+        if(bp)
         {
-          std::cout<<i<<"\t"<<p->contents(i)<<std::endl;
+          for(ui32 i=0; i< bp->numRegisters(); i++)
+          {
+            std::cout<<i<<"\t"<<bp->contents(i)<<std::endl;
+          }
         }
       }
 

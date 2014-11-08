@@ -4,7 +4,7 @@
 #include <cstdio>
 #include <exception>
 #include <cstdlib>
-#include <GSharePredictor.h>
+#include <BranchPredictor.h>
 #include <iostream>
 #include <iomanip>
 #include <cstring>
@@ -106,7 +106,7 @@ namespace BranchPrediction
       {
         parse();
       }
-      void operator>>(GSharePredictor *p)
+      void operator>>(BranchPredictor *p)
       {
         switch(_nextInst)
         {

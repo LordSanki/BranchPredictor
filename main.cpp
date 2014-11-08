@@ -49,18 +49,14 @@ int main(int argc, char **argv)
 //    btb->init(); 
 //    btb->name("L1");
 
-    GSharePredictor *p1 = new GSharePredictor(M1,N);
-    GSharePredictor *p2 = new GSharePredictor(M2);
+    BranchPredictor *p1 = new GSharePredictor(M1,N);
+    BranchPredictor *p2 = new BimodalPredictor(M2);
 //    GSharePredictor *h1 = new HybridPredictor(K,p1,p2);
 
-    p1->init();
-    p2->init();
 //    h1->init();
-    p1->name("GSHARE");
-    p2->name("BIMODAL");
 //    h1->name("CHOOSER");
 
-    GSharePredictor *p = NULL;
+    BranchPredictor *p = NULL;
     if(strcmp(argv[1],"bimodal") == 0) p = p2;
     if(strcmp(argv[1],"gshare") == 0)  p = p1;
 //    if(strcmp(argv[1],"hybrid") == 0)  p = h1;
