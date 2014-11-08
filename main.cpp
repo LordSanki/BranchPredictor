@@ -29,9 +29,8 @@ int main(int argc, char **argv)
     return -1;
   }
 
-  //ui16 block_size = 32;//atoi(argv[e_BLOCKSIZE]);
-  //ui16 btb_size       = atoi(argv[argc -3]);//argv[e_L1_SIZE]);
-  //ui16 btb_assoc      = atoi(argv[argc -2]);//argv[e_L1_ASSOC]);
+  ui16 btb_size       = atoi(argv[argc -3]);//argv[e_L1_SIZE]);
+  ui16 btb_assoc      = atoi(argv[argc -2]);//argv[e_L1_ASSOC]);
   ui16 M1=0,M2=0,N=0,K=0;
  
   if(strcmp(argv[1],"bimodal") == 0)
@@ -51,15 +50,8 @@ int main(int argc, char **argv)
     M2 = atoi(argv[5]);
   }
 
-  //ReplacementPolicy::Types rP  = ReplacementPolicy::e_LRU;
-  //WritePolicy wP        = e_WBWA;
-
   try
   {
-//    Cache *btb = new Cache( block_size, btb_size, btb_assoc, rP, wP, (Memory*)new MainMemory());
-//    btb->init(); 
-//    btb->name("L1");
-
     BranchPredictor *gshare = new GSharePredictor(M1,N);
     BranchPredictor *bimodal = new BimodalPredictor(M2);
     BranchPredictor *hybrid = new HybridPredictor(K,M1,N,M2);
@@ -68,17 +60,22 @@ int main(int argc, char **argv)
     if(strcmp(argv[1],"bimodal") == 0) p = bimodal;
     if(strcmp(argv[1],"gshare") == 0)  p = gshare;
     if(strcmp(argv[1],"hybrid") == 0)  p = hybrid;
+    
+    BTB *btb = new BTB(p, btb_size, btb_assoc);
+
     ResultGenerator rGen(argc, argv);
     for(TraceReader tReader(argv[argc-1]); tReader; tReader++)
     {
-      tReader>>p;
+      tReader>>btb;
     }
-    rGen<<p;
+    if(btb_size > 0)
+      rGen<<btb;
+    else
+      rGen<<p;
     delete bimodal;
     delete gshare;
     delete hybrid;
-//    delete btb;
-
+    delete btb;
   }
   catch(const exception &e)
   {

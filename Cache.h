@@ -67,11 +67,13 @@ namespace CacheSimulator
     virtual bool isCache() {return true;}
     protected:
     // function to read data
-    ui8 readC(ui32 addr)
+    bool readC(ui32 addr)
     {
+      bool hit = false;
       // check if entry is present in cache
       if(cacheHit(addr))
       {
+        hit = true;
         _rhits++;
       }
       // issue read miss if enrty is missing
@@ -80,18 +82,22 @@ namespace CacheSimulator
         if(_victimCache)
         {
           if(victimHit(addr))
+          {
+            hit = true;
             _rhits++;
+          }
           else
             victimMiss(addr);
         }
         else
           cacheMiss(addr);
       }
-      return DATA;
+      return hit;
     }
     // function to write data
-    void writeC(ui32 addr, ui8)
+    bool writeC(ui32 addr, ui8)
     {
+      bool hit = false;
       // chechk if enrty is present
       TagEntry &tag = cacheHit(addr);
       bool dirty = true;
@@ -111,6 +117,7 @@ namespace CacheSimulator
               if(t)
               {
                 t.write(dirty);
+                hit = true;
                 _whits++;
               }
               else
@@ -134,9 +141,11 @@ namespace CacheSimulator
       // if entry is present in cache then set dirty bit according to write policy
       if(tag)
       {
+        hit = true;
         _whits++;
         tag.write(dirty);
       }
+      return hit;
     }
     void initC()
     {

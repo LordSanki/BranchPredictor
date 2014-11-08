@@ -1,6 +1,6 @@
 #ifndef __RESULT_GENERATOR_H__
 #define __RESULT_GENERATOR_H__
-
+#define PROJ1A
 #include <Memory.h>
 #include <Cache.h>
 #include <iostream>
@@ -9,6 +9,7 @@
 #include <BimodalPredictor.h>
 #include <GSharePredictor.h>
 #include <HybridPredictor.h>
+#include <BTB.h>
 namespace CacheSimulator
 {
   class ResultGenerator
@@ -18,6 +19,28 @@ namespace CacheSimulator
       {
         _argc = argc;
         _argv = argv;
+      }
+      void operator<<(BranchPrediction::BTB *btb)
+      {
+        using namespace BranchPrediction;
+        std::cout<<"COMMAND"<<std::endl;
+        for(i32 i=0; i<_argc; i++)
+          std::cout<<_argv[i]<<" ";
+        std::cout<<std::endl;
+        std::cout<<"OUTPUT"<<std::endl;
+        std::cout<<"size of BTB:   "<<btb->cache()->size()<<std::endl;
+        std::cout<<"number of branches:  "<<btb->cache()->reads()<<std::endl;
+        std::cout<<"number of predictions from branch predictor:  "<<btb->predictor()->numBranches()<<std::endl;
+        std::cout<<"number of mispredictions from branch predictor: "<<btb->predictor()->mispredictions()<<std::endl;
+        std::cout<<"number of branches miss in BTB and taken:  "<<btb->btbForcedMisses()<<std::endl;
+        ui32 total_missprediction = btb->btbForcedMisses() + btb->predictor()->mispredictions();
+        std::cout<<"total mispredictions: "<<total_missprediction<<std::endl;
+        double rate = (total_missprediction*100.0)/btb->cache()->reads();
+        std::cout<<"misprediction rate: "<<std::fixed<<std::setprecision(2)<<rate<<"%"<<std::endl<<std::endl;
+        std::cout<<"FINAL BTB CONTENTS"<<std::endl;
+        printCacheContents(btb->cache());
+        std::cout<<std::endl;
+        printPredictorContents(btb->predictor());
       }
       void operator<<(BranchPrediction::BranchPredictor *p)
       {
@@ -31,6 +54,11 @@ namespace CacheSimulator
         std::cout<<"number of mispredictions: "<<p->mispredictions()<<std::endl;
         double rate = ((p->mispredictions()*100.0)/p->numBranches());
         std::cout<<"misprediction rate: "<<std::fixed<<std::setprecision(2)<<rate<<"%"<<std::endl;
+        printPredictorContents(p);
+      }
+      void printPredictorContents(BranchPrediction::BranchPredictor *p)
+      {
+        using namespace BranchPrediction;
         std::cout<<"FINAL "<<p->name()<<" CONTENTS"<<std::endl;
         BimodalPredictor *bp = dynamic_cast<BimodalPredictor*>(p);
         if(bp)
@@ -85,6 +113,7 @@ namespace CacheSimulator
 #endif
 
 #ifdef PROJ1A
+        std::cout<<"===== "<<mem->name()<<" contents ====="<<std::endl;
         printCacheContents((Cache*) mem);
         std::cout<<std::endl;
 #else
@@ -92,7 +121,10 @@ namespace CacheSimulator
         while(t->isCache())
         {
           if(*t)
+          {
+            std::cout<<"===== "<<t->name()<<" contents ====="<<std::endl;
             printCacheContents((Cache*) t);
+          }
           t = t->next();
         }
 #endif
@@ -109,7 +141,6 @@ namespace CacheSimulator
 
       void printCacheContents(Cache * cache)
       {
-        std::cout<<"===== "<<cache->name()<<" contents ====="<<std::endl;
 
         for(ui32 i=0; i<cache->set(); i++)
         {

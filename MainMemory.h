@@ -23,13 +23,14 @@ namespace CacheSimulator
       {
       }
       // function to read data
-      ui8 readC(ui32 addr)
+      bool readC(ui32 addr)
       {
-        return DATA;
+        return true;
       }
       // function to write data
-      void writeC(ui32 addr, ui8 data)
+      bool writeC(ui32 addr, ui8 data)
       {
+        return true;
       }
   };
 };

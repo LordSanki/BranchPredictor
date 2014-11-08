@@ -8,6 +8,7 @@
 #include <iostream>
 #include <iomanip>
 #include <cstring>
+#include <BTB.h>
 namespace BranchPrediction
 {
 #define INVALID_CHAR 255U
@@ -120,6 +121,21 @@ namespace BranchPrediction
             break;
         }
       }
+      void operator>>(BTB *btb)
+      {
+        switch(_nextInst)
+        {
+          case e_Taken:
+            btb->read(_nextAddr, true);
+            break;
+          case e_NotTaken:
+            btb->read(_nextAddr, false);
+            break;
+          default:
+            break;
+        }
+      }
+
   };
 };
 #endif //__TARCE_READER_H__
